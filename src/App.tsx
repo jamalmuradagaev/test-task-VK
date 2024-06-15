@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes} from 'react-router-dom'
-import MovieList from './components/MovieList'
-// import MovieDetails from './components/MovieDetails'
+import MovieList from './components/List/MovieList'
+import MovieDetails from './components/MovieDetails/MovieDetails'
 import './App.css'
 
 function App() {
@@ -9,7 +9,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path='/' Component={MovieList}/>
-        {/* <Route path='/movie/:id' Component={MovieDetails}/> */}
+        <Route path='/movie/:id' Component={MovieDetails}/>
       </Routes>
     </BrowserRouter>
   )

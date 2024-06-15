@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import MovieCard from './MovieCard/MovieCard';
+import MovieCard from '../MovieCard/MovieCard';
+import { Link } from 'react-router-dom';
 
 const options = {
     method: 'GET',
@@ -8,12 +9,18 @@ const options = {
     headers: { accept: 'application/json', 'X-API-KEY': 'K6ZYE04-Y7V4H63-PJRT2D6-P4ST2G0' }
 };
 
+export interface Genre {
+    name: string;
+  }
+
 interface Movie {
     id: number,
     name: string,
     poster: string,
     year: number,
     rating: number,
+    description: string,
+    genres: Genre[];
 }
 
 const MovieList: React.FC = () => {
@@ -29,11 +36,13 @@ const MovieList: React.FC = () => {
                     poster: item.poster?.url,
                     year: item.year,
                     rating: item.rating.imdb,
+                    description: item.description,
+                    genres: item.genres.map((genre: any) => genre.name),
                 })));
             })
-            // .catch(function (error) {
-            //     console.error(error);
-            // });
+            .catch(function (error) {
+                console.error(error);
+            });
     }, [])
 
     console.log(movies)
@@ -42,8 +51,13 @@ const MovieList: React.FC = () => {
         <div>
             <ul>
                 {movies.map(movie => {
-                    return <MovieCard key={movie.id} movie={movie} />
-
+                    return (
+                        <li key={movie.id}>
+                            <Link to={`/movie/${movie.id}`}>
+                                <MovieCard  movie={movie} />
+                            </Link>
+                        </li>
+                    )
                 })}
             </ul>
         </div>

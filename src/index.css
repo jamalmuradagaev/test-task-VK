@@ -30,6 +30,6 @@ body {
   min-height: 100vh;
 }
 
-img{
-  width: 200px;
+ul li{
+  list-style-type: none;
 }
