@@ -11,7 +11,7 @@ const options = {
 
 export interface Genre {
     name: string;
-  }
+}
 
 interface Movie {
     id: number,
@@ -20,11 +20,36 @@ interface Movie {
     year: number,
     rating: number,
     description: string,
-    genres: Genre[];
+    genres: Genre[],
+    isFavourite: boolean,
 }
 
 const MovieList: React.FC = () => {
     const [movies, setMovies] = useState<Movie[]>([])
+    const [favoriteMovies, setFavoriteMovies] = useState<Movie[]>([])
+    const [isFavourites, setIsFavourites] = useState(false)
+
+    useEffect(() => {
+        const storedFavoriteMovies = localStorage.getItem('favoriteMovies');
+        if (storedFavoriteMovies) {
+            const parsedFavoriteMovies = JSON.parse(storedFavoriteMovies);
+            setFavoriteMovies(parsedFavoriteMovies);
+        }
+    }, []);
+
+    const addToFavourites = (movie: Movie) => {
+        const isAlreadyFavourite = favoriteMovies.some(m => m.id === movie.id);
+        let newFavoriteMovies;
+        if (isAlreadyFavourite) {
+            newFavoriteMovies = favoriteMovies.filter(m => m.id !== movie.id);
+        } else {
+            newFavoriteMovies = [...favoriteMovies, { ...movie, isFavourite: true }];
+        }
+        setFavoriteMovies(newFavoriteMovies);
+        localStorage.setItem('favoriteMovies', JSON.stringify(newFavoriteMovies));
+    }
+
+    const isMovieFavourite = (movieId: number) => favoriteMovies.some(movie => movie.id === movieId && movie.isFavourite)
 
     useEffect(() => {
         axios
@@ -38,6 +63,7 @@ const MovieList: React.FC = () => {
                     rating: item.rating.imdb,
                     description: item.description,
                     genres: item.genres.map((genre: any) => genre.name),
+                    isFavourite: false,
                 })));
             })
             .catch(function (error) {
@@ -49,12 +75,22 @@ const MovieList: React.FC = () => {
 
     return (
         <div>
+            <button onClick={() => setIsFavourites(!isFavourites)}>
+                {isFavourites ? 'Показать все фильмы' : 'Показать избранные'}</button>
             <ul>
-                {movies.map(movie => {
+                {isFavourites ? favoriteMovies.map(movie => {
                     return (
                         <li key={movie.id}>
                             <Link to={`/movie/${movie.id}`}>
-                                <MovieCard  movie={movie} />
+                                <MovieCard movie={movie} onAddToFavourites={() => addToFavourites(movie)} isFavourite={isMovieFavourite(movie.id)} />
+                            </Link>
+                        </li>
+                    )
+                }) : movies.map(movie => {
+                    return (
+                        <li key={movie.id}>
+                            <Link to={`/movie/${movie.id}`}>
+                                <MovieCard movie={movie} onAddToFavourites={() => addToFavourites(movie)} isFavourite={isMovieFavourite(movie.id)} />
                             </Link>
                         </li>
                     )

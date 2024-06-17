@@ -9,14 +9,26 @@ interface Movie {
   rating: number;
 }
 
-const MovieCard: React.FC<{ movie: Movie }> = ({ movie }) => {
+interface MovieCardProps {
+  movie: Movie;
+  onAddToFavourites: () => void;
+  isFavourite: boolean;
+}
+
+const MovieCard: React.FC<MovieCardProps> = ({ movie, onAddToFavourites, isFavourite }) => {
   return (
-    <div className={s.card}>
-      <img src={movie.poster} alt='Постер не доступен' />
-      <h2>{movie.name}</h2>
-      <p>Год: {movie.year}</p>
-      <p>Рейтинг: {movie.rating}</p>
-    </div>
+    <>
+      <div className={s.card}>
+        <img src={movie.poster} alt='Постер не доступен' />
+        <h2>{movie.name}</h2>
+        <p>Год: {movie.year}</p>
+        <p>Рейтинг: {movie.rating}</p>
+        <button onClick={(e) => {
+          e.preventDefault();
+          onAddToFavourites();
+        }}>{isFavourite ? 'Удалить из избранного' : 'Добавить в избранное'}</button>
+      </div>
+    </>
   );
 };
 
