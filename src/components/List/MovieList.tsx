@@ -24,10 +24,34 @@ interface Movie {
     isFavourite: boolean,
 }
 
+const genres = [
+    "приключения",
+    "анимэ",
+    "биография",
+    "комедия",
+    "криминал",
+    "документальный",
+    "драма",
+    "семейный",
+    "фэнтези",
+    "история",
+    "ужасы",
+    "мистерия",
+    "романтика",
+    "научная фантастика",
+    "триллер",
+    "война",
+    "вестерн"
+];
+
 const MovieList: React.FC = () => {
     const [movies, setMovies] = useState<Movie[]>([])
     const [favoriteMovies, setFavoriteMovies] = useState<Movie[]>([])
     const [isFavourites, setIsFavourites] = useState(false)
+    const [isFilter, setIsFilter] = useState(false)
+    const [ratingRange, setRatingRange] = useState<{ min: number, max: number }>({ min: 0, max: 10 })
+    const [yearRange, setYearRange] = useState<{ min: number, max: number }>({ min: 1990, max: 2024 })
+    const [selectedGenres, setSelectedGenres] = useState<string[]>([])
 
     useEffect(() => {
         const storedFavoriteMovies = localStorage.getItem('favoriteMovies');
@@ -73,10 +97,53 @@ const MovieList: React.FC = () => {
 
     console.log(movies)
 
+    const filteredMovies = movies.filter(movie =>
+        movie.rating >= ratingRange.min &&
+        movie.rating <= ratingRange.max &&
+        movie.year >= yearRange.min &&
+        movie.year <= yearRange.max &&
+        (selectedGenres.length === 0 || movie.genres.every(genre => selectedGenres.includes(genre.name)))
+    )
+
     return (
         <div>
-            <button onClick={() => setIsFavourites(!isFavourites)}>
-                {isFavourites ? 'Показать все фильмы' : 'Показать избранные'}</button>
+            <button onClick={() => { setIsFavourites(!isFavourites) }}>
+                {isFavourites ? 'Показать все фильмы' : 'Показать избранные'}
+            </button>
+
+            {!isFavourites && <button onClick={() => setIsFilter(!isFilter)}>
+                {isFilter ? 'Скрыть фильтры' : 'Показать фильтры'}
+            </button>}
+
+            {!isFavourites && isFilter ?
+                <div className='Filters'>
+                    <label>Рейтинг:</label>
+                    <input type="number" value={ratingRange.min} onChange={e => setRatingRange({ ...ratingRange, min: parseInt(e.target.value) })} />
+                    <input type="number" value={ratingRange.max} onChange={e => setRatingRange({ ...ratingRange, max: parseInt(e.target.value) })} />
+
+                    <label>Год выпуска:</label>
+                    <input type="number" value={yearRange.min} onChange={e => setYearRange({ ...yearRange, min: parseInt(e.target.value) })} />
+                    <input type="number" value={yearRange.max} onChange={e => setYearRange({ ...yearRange, max: parseInt(e.target.value) })} />
+
+                    <label>Жанры</label>
+                    <select value={selectedGenres.join(',')} onChange={e => {
+                        const selectedGenre = e.target.value;
+                        if (selectedGenre === 'All') {
+                            setSelectedGenres([]);
+                        } else {
+                            setSelectedGenres([selectedGenre]);
+                        }
+                    }}>
+                        <option value="All">Все жанры</option>
+                        {genres.map(genre => (
+                            <option value={genre} key={genre}>{genre}</option>
+                        ))}
+                    </select>
+
+                </div>
+                : null
+            }
+
             <ul>
                 {isFavourites ? favoriteMovies.map(movie => {
                     return (
@@ -86,7 +153,7 @@ const MovieList: React.FC = () => {
                             </Link>
                         </li>
                     )
-                }) : movies.map(movie => {
+                }) : filteredMovies.map(movie => {
                     return (
                         <li key={movie.id}>
                             <Link to={`/movie/${movie.id}`}>
