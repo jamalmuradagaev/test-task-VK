@@ -1,50 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import MovieCard from '../MovieCard/MovieCard';
 import { Link } from 'react-router-dom';
+import { genres, Movie, Genre } from '../../data';
 
-const options = {
-    method: 'GET',
-    url: 'https://api.kinopoisk.dev/v1.4/movie',
-    headers: { accept: 'application/json', 'X-API-KEY': 'K6ZYE04-Y7V4H63-PJRT2D6-P4ST2G0' }
-};
-
-export interface Genre {
-    name: string;
-}
-
-interface Movie {
-    id: number,
-    name: string,
-    poster: string,
-    year: number,
-    rating: number,
-    description: string,
-    genres: Genre[],
-    isFavourite: boolean,
-}
-
-const genres = [
-    "приключения",
-    "анимэ",
-    "биография",
-    "комедия",
-    "криминал",
-    "документальный",
-    "драма",
-    "семейный",
-    "фэнтези",
-    "история",
-    "ужасы",
-    "мистерия",
-    "романтика",
-    "научная фантастика",
-    "триллер",
-    "война",
-    "вестерн"
-];
-
-const MovieList: React.FC = () => {
+const MovieList = () => {
     const [movies, setMovies] = useState<Movie[]>([])
     const [favoriteMovies, setFavoriteMovies] = useState<Movie[]>([])
     const [isFavourites, setIsFavourites] = useState(false)
@@ -61,6 +21,7 @@ const MovieList: React.FC = () => {
         }
     }, []);
 
+    // добавление в избранное
     const addToFavourites = (movie: Movie) => {
         const isAlreadyFavourite = favoriteMovies.some(m => m.id === movie.id);
         let newFavoriteMovies;
@@ -73,21 +34,29 @@ const MovieList: React.FC = () => {
         localStorage.setItem('favoriteMovies', JSON.stringify(newFavoriteMovies));
     }
 
-    const isMovieFavourite = (movieId: number) => favoriteMovies.some(movie => movie.id === movieId && movie.isFavourite)
+    const isMovieFavourite = (movieId: number) => {
+        return favoriteMovies.some(movie => movie.id === movieId && movie.isFavourite)
+    }
 
+    // вывод данных из сервера
     useEffect(() => {
         axios
-            .request(options)
+            .get('https://api.kinopoisk.dev/v1.4/movie', {
+                headers: {
+                    accept: 'application/json',
+                    'X-API-KEY': 'K6ZYE04-Y7V4H63-PJRT2D6-P4ST2G0'
+                }
+            })
             .then(function (response) {
-                setMovies(response.data.docs.map((item: any) => ({
+                setMovies(response.data.docs.map((item: Movie) => ({
                     id: item.id,
                     name: item.name,
-                    poster: item.poster?.url,
+                    poster: item.poster,
                     year: item.year,
-                    rating: item.rating.imdb,
+                    rating: item.rating,
                     description: item.description,
-                    genres: item.genres.map((genre: any) => genre.name),
-                    isFavourite: false,
+                    genres: item.genres.map((genre: Genre) => genre.name),
+                    isFavourite: isFavourites,
                 })));
             })
             .catch(function (error) {
@@ -97,13 +66,16 @@ const MovieList: React.FC = () => {
 
     console.log(movies)
 
+    // фильтрация 
     const filteredMovies = movies.filter(movie =>
-        movie.rating >= ratingRange.min &&
-        movie.rating <= ratingRange.max &&
+        movie.rating.imdb >= ratingRange.min &&
+        movie.rating.imdb <= ratingRange.max &&
         movie.year >= yearRange.min &&
         movie.year <= yearRange.max &&
         (selectedGenres.length === 0 || movie.genres.every(genre => selectedGenres.includes(genre.name)))
     )
+
+    console.log(filteredMovies)
 
     return (
         <div>
@@ -153,7 +125,8 @@ const MovieList: React.FC = () => {
                             </Link>
                         </li>
                     )
-                }) : filteredMovies.map(movie => {
+                })
+                : filteredMovies.map(movie => {
                     return (
                         <li key={movie.id}>
                             <Link to={`/movie/${movie.id}`}>
