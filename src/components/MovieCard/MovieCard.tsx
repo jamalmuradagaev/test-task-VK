@@ -8,7 +8,7 @@ interface MovieCardProps {
 }
 
 const MovieCard = ({ movie, onAddToFavourites, isFavourite }: MovieCardProps) => {
-  console.log('MovieCard props:', movie, onAddToFavourites, isFavourite);
+  // console.log('MovieCard props:', movie, onAddToFavourites, isFavourite);
   return (
     <>
       <div className={s.card}>

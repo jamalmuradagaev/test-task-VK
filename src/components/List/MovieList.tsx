@@ -62,9 +62,9 @@ const MovieList = () => {
             .catch(function (error) {
                 console.error(error);
             });
-    }, [])
+    }, [ratingRange, yearRange, selectedGenres])
 
-    console.log(movies)
+    // console.log(movies)
 
     // фильтрация 
     const filteredMovies = movies.filter(movie =>
@@ -72,7 +72,7 @@ const MovieList = () => {
         movie.rating.imdb <= ratingRange.max &&
         movie.year >= yearRange.min &&
         movie.year <= yearRange.max &&
-        (selectedGenres.length === 0 || movie.genres.every(genre => selectedGenres.includes(genre.name)))
+        (selectedGenres.length === 0 || movie.genres.some(genre => selectedGenres.includes(genre)))
     )
 
     console.log(filteredMovies)
@@ -99,7 +99,7 @@ const MovieList = () => {
 
                     <label>Жанры</label>
                     <select value={selectedGenres.join(',')} onChange={e => {
-                        const selectedGenre = e.target.value;
+                        const selectedGenre= e.target.value;
                         if (selectedGenre === 'All') {
                             setSelectedGenres([]);
                         } else {
